@@ -1,10 +1,28 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: GPL-2.0-or-later
 """
 pyscript_inspector.py
 Entry point for the Parametric Inspector. Inkscape invokes this with the
 current SVG passed either as a positional file path arg or via stdin (and
 optionally `--output FILE` to redirect what would normally go to stdout).
+
+Copyright (C) 2026 Jonas Teufel <jonseb1998@gmail.com>
+
+This file is part of inkscape-pyscript.
+
+This program is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, see <https://www.gnu.org/licenses/>.
 
 We patch xmlns:param into the SVG root if missing, write the SVG back so
 Inkscape sees a no-op, then spawn the inspector window as a *detached*

@@ -1,5 +1,8 @@
 inkscape-pyscript install notes
 ================================
+SPDX-License-Identifier: GPL-2.0-or-later
+Copyright (C) 2026 Jonas Teufel <jonseb1998@gmail.com>
+
 Source: https://gitlab.com/mnesarco/inkscape-pyscript (cloned 2026-05-01)
 Installed into: ~/.config/inkscape/extensions/
 Target environment: Inkscape 1.4.3, Python 3.12.3, GtkSource 3.0

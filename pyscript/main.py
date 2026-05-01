@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+# SPDX-License-Identifier: GPL-2.0-or-later
 """
 main.py
 pyscript core inkscape extension.
 
 Copyright (C) 2019 Frank Martinez <mnesarco at gmail.com>
+Copyright (C) 2026 Jonas Teufel <jonseb1998@gmail.com>
 
 This file is part of inkscape-pyscript.
 
