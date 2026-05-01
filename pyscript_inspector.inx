@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<inkscape-extension xmlns="http://www.inkscape.org/namespace/inkscape/extension">
+    <_name>Parametric Inspector</_name>
+    <id>com.fdmtech.inkscape.pyscript.inspector</id>
+    <dependency type="executable" location="inx">pyscript_inspector.py</dependency>
+    <effect needs-live-preview="false">
+      <effects-menu>
+        <submenu _name="Python Scripting"/>
+      </effects-menu>
+    </effect>
+    <script>
+        <command location="inx" interpreter="python">pyscript_inspector.py</command>
+    </script>
+</inkscape-extension>

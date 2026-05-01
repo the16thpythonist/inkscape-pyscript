@@ -36,6 +36,9 @@ version = "0.1"
 
 SELECTOR = re.compile(r'#(?P<ident>[a-zA-Z0-9._\-:]+)|(?P<tag>(\w+:)*\w+)')
 
+PARAM_NS = 'http://fdmtech.com/inkscape/param'
+PARAM_PREFIX = '{%s}' % PARAM_NS
+
 class PYScriptExceptionInfo(object):
     def __init__(self, lineno, message):
         self.lineno = lineno
@@ -168,7 +171,7 @@ class PYScript(inkex.EffectExtension):
 
     def execute(self):
         ok, results = self.compile()
-        if ok: 
+        if ok:
             saved = self.save_state()
             smain = None
             ctx = {'ink' : self}
@@ -184,11 +187,56 @@ class PYScript(inkex.EffectExtension):
                 r = smain.execute(ctx, ctx)
                 sresults.append(r)
                 ok = ok and r[0]
+            if ok:
+                self.last_ctx = ctx
+                param_errors = self.eval_params(ctx)
+                self.last_param_errors = param_errors
+                for elem_id, attr, msg in param_errors:
+                    sresults.append([False, None, PYScriptExceptionInfo(
+                        lineno=0,
+                        message="param:%s on #%s: %s" % (attr, elem_id, msg))])
+                ok = ok and not param_errors
             if not ok:
-                self.restore_state(saved)  
+                self.restore_state(saved)
             return (ok, sresults)
         else:
             return (ok, results)
+
+    def eval_params(self, ctx):
+        """Walk every element, evaluate `param:*` attributes against ctx, and
+        write the result into the corresponding non-namespaced attribute.
+        Returns a list of (element_id, attr_name, error_message) tuples."""
+        errors = []
+        root = self.document.getroot()
+        if 'param' not in root.nsmap:
+            self._declare_param_ns()
+        for elem in self.document.iter():
+            for qname in list(elem.attrib):
+                if not qname.startswith(PARAM_PREFIX):
+                    continue
+                local = qname[len(PARAM_PREFIX):]
+                expr = elem.attrib[qname]
+                try:
+                    value = eval(expr, ctx)
+                except Exception as e:
+                    errors.append((elem.get('id', '?'), local, "%s: %s" % (type(e).__name__, e)))
+                    continue
+                elem.attrib[local] = str(value)
+        return errors
+
+    def _declare_param_ns(self):
+        """lxml can't add namespace declarations to existing trees. We rebuild
+        the root with the param namespace included."""
+        from lxml import etree
+        root = self.document.getroot()
+        if 'param' in root.nsmap:
+            return
+        new_nsmap = dict(root.nsmap)
+        new_nsmap['param'] = PARAM_NS
+        new_root = etree.Element(root.tag, nsmap=new_nsmap, attrib=root.attrib)
+        for child in root:
+            new_root.append(child)
+        self.document._setroot(new_root)
 
     def effect(self):
         self.__reload()

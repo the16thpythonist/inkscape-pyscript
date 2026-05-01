@@ -1,0 +1,59 @@
+inkscape-pyscript install notes
+================================
+Source: https://gitlab.com/mnesarco/inkscape-pyscript (cloned 2026-05-01)
+Installed into: ~/.config/inkscape/extensions/
+Target environment: Inkscape 1.4.3, Python 3.12.3, GtkSource 3.0
+
+Patches applied during install
+------------------------------
+1. pyscript/svg.py line 87
+   - collections.Mapping  ->  collections.abc.Mapping
+   Reason: collections.Mapping was removed in Python 3.10 (the upstream
+   extension was written for Python 3.5). Without this fix, calling
+   PathObject.style({...}) raises AttributeError on Python 3.10+.
+
+Local additions on top of upstream (NOT in the gitlab repo)
+-----------------------------------------------------------
+2. pyscript/main.py — `param:*` namespace evaluator
+   - Added module-level constants PARAM_NS, PARAM_PREFIX
+   - PYScript.execute() now runs eval_params() after the user's scripts
+     finish, walking every element with attributes in the
+     http://fdmtech.com/inkscape/param namespace. Each `param:foo="EXPR"`
+     attribute is eval'd against the script's globals, and the result is
+     written into the corresponding non-namespaced `foo` attribute.
+   - Added _declare_param_ns() to inject xmlns:param into the SVG root if
+     it isn't already declared.
+   - Both the original "Run and Update" headless path AND the new Inspector
+     use this code path.
+
+3. pyscript/inspector.py — Floating Parametric Inspector window (new file)
+   - Two-tab Gtk window: Inspector + Script
+   - Polls running Inkscape every 300ms via
+     `inkscape --active-window --actions=select-list` to track canvas
+     selection
+   - Run button executes the script, evaluates every param:* attribute,
+     and pushes both the param expression and its evaluated value to the
+     running canvas via `inkscape --active-window --actions=...`
+   - Caveat: object-set-attribute uses comma as name/value separator;
+     expressions or values containing commas are skipped and reported
+     as "skipped (comma in value)" in the status bar. Use spaces in SVG
+     transforms (`translate(50 50)` not `translate(50, 50)`).
+
+4. pyscript_inspector.{py,inx} — new menu entry "Parametric Inspector"
+   - Runs as a standard inkex extension, declares xmlns:param on the SVG
+     root if missing, then spawns the inspector window as a detached
+     process. The detached process communicates with Inkscape only via
+     `--active-window --actions=...`, so Inkscape stays interactive.
+
+5. pyscript_ide.{py,inx} — REMOVED
+   - The old modal Code Editor is replaced by the Parametric Inspector,
+     which embeds the same kind of Python editor as one of its tabs.
+   - The "Run and Update" menu entry (pyscript_run.{py,inx}) is preserved
+     for headless/keyboard-shortcut re-evaluation of param:* without
+     opening the inspector.
+
+Uninstall
+---------
+    rm -rf ~/.config/inkscape/extensions/pyscript \
+           ~/.config/inkscape/extensions/pyscript_ide.* \
+           ~/.config/inkscape/extensions/pyscript_run.*
