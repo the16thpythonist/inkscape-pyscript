@@ -84,7 +84,7 @@ class PathObject(object):
         return self.attrib[name]
 
     def style(self, style = None):
-        if isinstance(style, collections.Mapping):
+        if isinstance(style, collections.abc.Mapping):
             self._style.update(style)
         return self._style
 
